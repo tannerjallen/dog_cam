@@ -55,6 +55,19 @@ while True:
     # Update couch boundary only if detected
     if new_couch_boundary:
         couch_boundary = new_couch_boundary
+        print(f"Couch boundary: {couch_boundary}")
+
+    # Calculate middle third of the couch boundary
+    couch_x1, couch_y1 = couch_boundary[0]
+    couch_x2, couch_y2 = couch_boundary[2]
+    middle_third_y1 = -100 + couch_y1 + (couch_y2 - couch_y1) // 3
+    middle_third_y2 = couch_y2 - (couch_y2 - couch_y1) // 3
+
+    # Draw the middle third boundary on the frame
+    cv.rectangle(frame, (couch_x1, middle_third_y1), (couch_x2, middle_third_y2), (0, 0, 255), 2)  # Red box
+
+    # Update couch_boundary to middle third boundary
+    couch_boundary = [(couch_x1, middle_third_y1), (couch_x2, middle_third_y1), (couch_x2, middle_third_y2), (couch_x1, middle_third_y2)]
 
     # Check if the dog is inside the couch boundary
     if dog_position and couch_boundary:
