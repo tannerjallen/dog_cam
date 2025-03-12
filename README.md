@@ -12,8 +12,6 @@ To get ssh working, had to select custom settings in Raspberry Pi Imager. Using 
 
 Can also access at <https://connect.raspberrypi.com/devices>.
 
-Git PAT: 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
-
 Can access the GUI view by using RealVNC, IP `192.168.1.120` with username `pi` and password `Cornell!32A`.
 
 ## Transmitter
