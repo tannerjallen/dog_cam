@@ -47,8 +47,10 @@ while True:
                 cv.putText(frame, "Couch", (x1, y1 - 10), cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
 
             # If a dog is detected, track its position
-            if class_id == 18:  # COCO label for "dog"
+            if class_id == 16:  # COCO label for "dog"
+                print(f"Dog detected with confidence: {conf}")
                 dog_position = (x1, y1, x2, y2)
+                print(f"Dog position: {dog_position}")
                 cv.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)  # Green box
                 cv.putText(frame, "Dog", (x1, y1 - 10), cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
@@ -58,16 +60,18 @@ while True:
         print(f"Couch boundary: {couch_boundary}")
 
     # Calculate middle third of the couch boundary
-    couch_x1, couch_y1 = couch_boundary[0]
-    couch_x2, couch_y2 = couch_boundary[2]
-    middle_third_y1 = -100 + couch_y1 + (couch_y2 - couch_y1) // 3
-    middle_third_y2 = couch_y2 - (couch_y2 - couch_y1) // 3
+    if couch_boundary:
+        couch_x1, couch_y1 = couch_boundary[0]
+        couch_x2, couch_y2 = couch_boundary[2]
+        middle_third_y1 = -100 + couch_y1 + (couch_y2 - couch_y1) // 3
+        middle_third_y2 = couch_y2 - (couch_y2 - couch_y1) // 3
 
-    # Draw the middle third boundary on the frame
-    cv.rectangle(frame, (couch_x1, middle_third_y1), (couch_x2, middle_third_y2), (0, 0, 255), 2)  # Red box
+        # Draw the middle third boundary on the frame
+        cv.rectangle(frame, (couch_x1, middle_third_y1), (couch_x2, middle_third_y2), (0, 0, 255), 2)  # Red box
 
-    # Update couch_boundary to middle third boundary
-    couch_boundary = [(couch_x1, middle_third_y1), (couch_x2, middle_third_y1), (couch_x2, middle_third_y2), (couch_x1, middle_third_y2)]
+        # Update couch_boundary to middle third boundary
+        couch_boundary = [(couch_x1, middle_third_y1), (couch_x2, middle_third_y1), (couch_x2, middle_third_y2), (couch_x1, middle_third_y2)]
+        print(f"Updated couch boundary to middle third: {couch_boundary}")
 
     # Check if the dog is inside the couch boundary
     if dog_position and couch_boundary:
@@ -75,12 +79,17 @@ while True:
         center_x = (x1 + x2) // 2
         center_y = (y1 + y2) // 2
 
+        # Plot the dog position as a point for debugging
+        cv.circle(frame, (center_x, center_y), 5, (255, 255, 0), -1)  # Cyan point
+
         # Convert couch boundary to a polygon
         couch_poly = np.array(couch_boundary, np.int32).reshape((-1, 1, 2))
         if cv.pointPolygonTest(couch_poly, (center_x, center_y), False) >= 0:
             print("Dog is on the couch!")
             action_script.beep_dog()
             action_script.buzz_dog()
+        else:
+            print("Dog is not on the couch.")
 
     cv.imshow("Dog & Couch Detection", frame)
     if cv.waitKey(1) & 0xFF == ord('q'):
