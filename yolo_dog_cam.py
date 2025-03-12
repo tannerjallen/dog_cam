@@ -2,9 +2,14 @@ import cv2 as cv
 import numpy as np
 from ultralytics import YOLO
 import action_script
+import time
 
 # Load YOLOv8 model (pretrained on COCO)
 model = YOLO("yolov8n.pt", verbose=False)
+
+action_script.beep_dog()
+time.sleep(1)
+action_script.buzz_dog()
 
 rtsp_url = "rtsp://tanner:69420@192.168.1.66/live"
 video_feed = cv.VideoCapture(rtsp_url)
@@ -87,7 +92,7 @@ while True:
         if cv.pointPolygonTest(couch_poly, (center_x, center_y), False) >= 0:
             print("Dog is on the couch!")
             action_script.beep_dog()
-            action_script.buzz_dog()
+            #action_script.buzz_dog()
         else:
             print("Dog is not on the couch.")
 
