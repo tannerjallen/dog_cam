@@ -3,11 +3,29 @@ import numpy as np
 from ultralytics import YOLO
 import action_script
 import time
+import atexit
+import json
 
 # Load YOLOv8 model (pretrained on COCO)
 model = YOLO("yolov8n.pt", verbose=False)
 
-action_script.beep_dog()
+# Initialize beep log
+beep_log = []
+
+def log_beep():
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    beep_log.append({"timestamp": timestamp})
+    action_script.beep_dog()
+
+def save_beep_log():
+    if beep_log == []:
+        beep_log.append({"timestamp": "No beeps logged."})
+    with open("beep_log.txt", "w") as f:
+        json.dump(beep_log, f, indent=4)
+
+atexit.register(save_beep_log)
+
+log_beep()
 time.sleep(1)
 action_script.buzz_dog()
 
@@ -91,7 +109,7 @@ while True:
         couch_poly = np.array(couch_boundary, np.int32).reshape((-1, 1, 2))
         if cv.pointPolygonTest(couch_poly, (center_x, center_y), False) >= 0:
             print("Dog is on the couch!")
-            action_script.beep_dog()
+            log_beep()
             #action_script.buzz_dog()
         else:
             print("Dog is not on the couch.")
