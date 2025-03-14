@@ -29,7 +29,7 @@ def save_beep_log():
 
 atexit.register(save_beep_log)
 
-action_script.beep_dog
+action_script.beep_dog()
 time.sleep(1)
 action_script.buzz_dog()
 
