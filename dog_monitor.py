@@ -6,8 +6,8 @@ import time
 import atexit
 import json
 
-# Load YOLOv8 model (pretrained on COCO)
-model = YOLO("yolov11n.pt", verbose=False)
+# Load YOLOv11 model (pretrained on COCO)
+model = YOLO("yolo11n.pt", verbose=False)
 
 # Load configuration from JSON file
 with open('config.json', 'r') as config_file:

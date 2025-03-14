@@ -18,7 +18,7 @@ def beep_dog():
     print(f"GPIO{config['beep_gpio_pin']} is HIGH, transistor ON")
 
     # Wait for the specified duration
-    time.sleep(config['duration'])
+    time.sleep(.2)
 
     # To turn the transistor OFF (set pin LOW)
     GPIO.output(config['beep_gpio_pin'], GPIO.LOW)
@@ -41,7 +41,7 @@ def buzz_dog():
     print(f"GPIO{config['buzz_gpio_pin']} is HIGH, transistor ON")
 
     # Wait for the specified duration
-    time.sleep(config['duration'])
+    time.sleep(.2)
 
     # To turn the transistor OFF (set pin LOW)
     GPIO.output(config['buzz_gpio_pin'], GPIO.LOW)
