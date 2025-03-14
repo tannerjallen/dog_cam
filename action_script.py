@@ -1,23 +1,28 @@
 import RPi.GPIO as GPIO
 import time
+import json
+
+# Load configuration from JSON file
+with open('config.json', 'r') as config_file:
+    config = json.load(config_file)
 
 def beep_dog():
-        # Set the GPIO mode
+    # Set the GPIO mode
     GPIO.setmode(GPIO.BCM)
 
-    # Set GPIO20 as an output pin
-    GPIO.setup(20, GPIO.OUT, initial=GPIO.LOW)  # Start with GPIO20 LOW
+    # Set the pin as an output pin
+    GPIO.setup(config['beep_gpio_pin'], GPIO.OUT, initial=GPIO.LOW)  # Start with pin LOW
 
-    # To turn the transistor ON (set GPIO20 HIGH)
-    GPIO.output(20, GPIO.HIGH)
-    print("GPIO20 is HIGH, transistor ON")
+    # To turn the transistor ON (set pin HIGH)
+    GPIO.output(config['beep_gpio_pin'], GPIO.HIGH)
+    print(f"GPIO{config['beep_gpio_pin']} is HIGH, transistor ON")
 
-    # Wait for 2 seconds (for demonstration purposes)
-    time.sleep(.2)
+    # Wait for the specified duration
+    time.sleep(config['duration'])
 
-    # To turn the transistor OFF (set GPIO20 LOW)
-    GPIO.output(20, GPIO.LOW)
-    print("GPIO20 is LOW, transistor OFF")
+    # To turn the transistor OFF (set pin LOW)
+    GPIO.output(config['beep_gpio_pin'], GPIO.LOW)
+    print(f"GPIO{config['beep_gpio_pin']} is LOW, transistor OFF")
 
     # Clean up GPIO settings after use
     GPIO.cleanup()
@@ -25,22 +30,22 @@ def beep_dog():
     return
 
 def buzz_dog():
-        # Set the GPIO mode
+    # Set the GPIO mode
     GPIO.setmode(GPIO.BCM)
 
-    # Set GPIO20 as an output pin
-    GPIO.setup(21, GPIO.OUT, initial=GPIO.LOW)  # Start with GPIO20 LOW
+    # Set the pin as an output pin
+    GPIO.setup(config['buzz_gpio_pin'], GPIO.OUT, initial=GPIO.LOW)  # Start with pin LOW
 
-    # To turn the transistor ON (set GPIO20 HIGH)
-    GPIO.output(21, GPIO.HIGH)
-    print("GPIO20 is HIGH, transistor ON")
+    # To turn the transistor ON (set pin HIGH)
+    GPIO.output(config['buzz_gpio_pin'], GPIO.HIGH)
+    print(f"GPIO{config['buzz_gpio_pin']} is HIGH, transistor ON")
 
-    # Wait for 2 seconds (for demonstration purposes)
-    time.sleep(.2)
+    # Wait for the specified duration
+    time.sleep(config['duration'])
 
-    # To turn the transistor OFF (set GPIO20 LOW)
-    GPIO.output(21, GPIO.LOW)
-    print("GPIO20 is LOW, transistor OFF")
+    # To turn the transistor OFF (set pin LOW)
+    GPIO.output(config['buzz_gpio_pin'], GPIO.LOW)
+    print(f"GPIO{config['buzz_gpio_pin']} is LOW, transistor OFF")
 
     # Clean up GPIO settings after use
     GPIO.cleanup()

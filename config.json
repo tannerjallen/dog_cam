@@ -1,0 +1,6 @@
+{
+    "beep_gpio_pin": 20,
+    "buzz_gpio_pin": 21,
+    "rtsp_url": ""
+
+}

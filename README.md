@@ -1,18 +1,19 @@
 # Dog Monitoring Camera 🐶📷
 
-Ever wonder if your pup is sneaking onto the couch while you're away? This project uses a Wyze camera with an RTSP feed and some clever AI to catch couch-surfing canines in the act. Get alerts, track their mischief, and maybe even win the eternal battle of "No dogs on the couch!"
+Ever wonder if your pup is sneaking onto the couch while you're away? This project uses a Wyze camera broadcasting an RTSP feed, [YOLO real-time object detector](https://docs.ultralytics.com/models/yolo11/#overview), and a [dog training collar](https://a.co/d/4xBPpxn) to catch couch-surfing canines in the act. Monitor their mischief and win the battle of "No dogs on the couch!"
 
-## Raspberry Pi
+## Getting Started
+1. Clone this repository.
+2. Update the `config.json` file with your GPIO pins and RTSP feed URL.
+3. Connect Raspberry Pi GPIO pins to control a dog training collar with a transistor.
 
-Connect from Macbook using `ssh raspberrypi.local` when it is booted up and online. Alternatively, its IP is `192.168.1.120` so you can ssh using `ssh pi@192.168.1.120`.
+## Usage
+1. Run the `dog_monitor.py` script to launch the RTSP stream and start the object detector.
+2. The system will beep and buzz the collar once at startup to confirm everything is working.
+3. If a dog is detected on the couch, the program will beep the collar to remind them to stay off.
+4. Each beep/buzz event is recorded in `beep_log.txt`.
 
-Password is `Cornell!32A`.
+## License
+This project is licensed under the MIT License.
 
-To get ssh working, had to select custom settings in Raspberry Pi Imager. Using SSID information, no account set up, then SSH key-gen. After flashing it to the SD, created a file called ssh in bootfs by running `touch /Volumes/bootfs/ssh`. Then, booting up the Pi with SD for a few minutes, `ssh pi@192.168.1.120` worked.
-
-Can also access at <https://connect.raspberrypi.com/devices>.
-
-Can access the GUI view by using RealVNC, IP `192.168.1.120` with username `pi` and password `Cornell!32A`.
-
-## Transmitter
-The button shorts across two pads when pressed. The voltage across these is 3.3V.
+*Created by Tanner J. Allen 2025. See [tannerjallen.com](https://tannerjallen.com).*
