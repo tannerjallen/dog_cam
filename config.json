@@ -1,6 +1,6 @@
 {
     "beep_gpio_pin": 20,
     "buzz_gpio_pin": 21,
-    "rtsp_url": "rtsp://tanner:69420@192.168.1.66/live"
+    "rtsp_url": ""
 
 }
