@@ -10,22 +10,40 @@ import json
 model = YOLO("yolo11n.pt", verbose=False)
 
 # Load configuration from JSON file
-with open('config.json', 'r') as config_file:
+with open('dog_cam/config.json', 'r') as config_file:
     config = json.load(config_file)
 
 # Initialize beep log
 beep_log = []
 
+frame_count = 0
+start_time = time.time()
+
+def calculate_fps():
+    global frame_count, start_time
+    frame_count += 1
+    if frame_count % 30 == 0:  # Calculate FPS every 30 frames
+        elapsed_time = time.time() - start_time
+        fps = frame_count / elapsed_time
+        print(f"FPS: {fps:.2f}")
+        frame_count = 0
+        start_time = time.time()
+
 def log_beep():
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     beep_log.append({"timestamp": timestamp})
-    action_script.beep_dog()
+    #action_script.beep_dog()
 
 def save_beep_log():
     if beep_log == []:
         beep_log.append({"timestamp": "No beeps logged."})
     with open("beep_log.txt", "w") as f:
         json.dump(beep_log, f, indent=4)
+
+def log_performance_metrics(frame_time, detection_time):
+    print(f"Frame processing time: {frame_time:.3f}s")
+    print(f"Detection time: {detection_time:.3f}s")
+    print(f"Total latency: {(frame_time + detection_time):.3f}s")
 
 atexit.register(save_beep_log)
 
@@ -49,81 +67,88 @@ frame_skip = 20 # Skip every 20 frames, decrease for more frequent detection
 frame_count = 0
 
 while True:
+    frame_start_time = time.time()
     ret, frame = video_feed.read()
     if not ret:
-        print("Unable to grab frame.")
-        break
-
-    frame_count += 1
-    if frame_count % frame_skip != 0:
         continue
 
-    # Run YOLOv8 detection
-    results = model(frame)
+    # Resize frame for faster processing
+    frame = cv.resize(frame, (640, 480))
 
-    # Initialize variables
-    dog_position = None
-    new_couch_boundary = None
+    # Process every Nth frame
+    if frame_count % 2 == 0:  # Process every other frame
+        detection_start_time = time.time()
+        results = model(frame)
+        detection_time = time.time() - detection_start_time
 
-    for r in results:
-        for box in r.boxes:
-            class_id = int(box.cls[0])
-            conf = box.conf[0].item()
-            x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding box
+        # Initialize variables
+        dog_position = None
+        new_couch_boundary = None
 
-            # If a couch is detected, update couch_boundary
-            if class_id == 57:  # COCO label for "couch"
-                new_couch_boundary = [(x1, y1), (x2, y1), (x2, y2), (x1, y2)]
-                cv.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)  # Blue box
-                cv.putText(frame, "Couch", (x1, y1 - 10), cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+        for r in results:
+            for box in r.boxes:
+                class_id = int(box.cls[0])
+                conf = box.conf[0].item()
+                x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding box
 
-            # If a dog is detected, track its position
-            if class_id == 16:  # COCO label for "dog"
-                print(f"Dog detected with confidence: {conf}")
-                dog_position = (x1, y1, x2, y2)
-                print(f"Dog position: {dog_position}")
-                cv.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)  # Green box
-                cv.putText(frame, "Dog", (x1, y1 - 10), cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                # If a couch is detected, update couch_boundary
+                if class_id == 57:  # COCO label for "couch"
+                    new_couch_boundary = [(x1, y1), (x2, y1), (x2, y2), (x1, y2)]
+                    #cv.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)  # Blue box
+                    #cv.putText(frame, "Couch", (x1, y1 - 10), cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
 
-    # Update couch boundary only if detected
-    if new_couch_boundary:
-        couch_boundary = new_couch_boundary
-        print(f"Couch boundary: {couch_boundary}")
+                # If a dog is detected, track its position
+                if class_id == 16:  # COCO label for "dog"
+                    print(f"Dog detected with confidence: {conf}")
+                    dog_position = (x1, y1, x2, y2)
+                    print(f"Dog position: {dog_position}")
+                    cv.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)  # Green box
+                    cv.putText(frame, "Dog", (x1, y1 - 10), cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
-    # Calculate middle third of the couch boundary
-    if couch_boundary:
-        couch_x1, couch_y1 = couch_boundary[0]
-        couch_x2, couch_y2 = couch_boundary[2]
-        middle_third_y1 = -100 + couch_y1 + (couch_y2 - couch_y1) // 3
-        middle_third_y2 = couch_y2 - (couch_y2 - couch_y1) // 3
+        # Update couch boundary only if detected
+        if new_couch_boundary:
+            couch_boundary = new_couch_boundary
+            print(f"Couch boundary: {couch_boundary}")
 
-        # Draw the middle third boundary on the frame
-        cv.rectangle(frame, (couch_x1, middle_third_y1), (couch_x2, middle_third_y2), (0, 0, 255), 2)  # Red box
+        # Calculate middle third of the couch boundary
+        if couch_boundary:
+            couch_x1, couch_y1 = couch_boundary[0]
+            couch_x2, couch_y2 = couch_boundary[2]
+            middle_third_y1 = -100 + couch_y1 + (couch_y2 - couch_y1) // 3
+            middle_third_y2 = couch_y2 - (couch_y2 - couch_y1) // 3
 
-        # Update couch_boundary to middle third boundary
-        couch_boundary = [(couch_x1, middle_third_y1), (couch_x2, middle_third_y1), (couch_x2, middle_third_y2), (couch_x1, middle_third_y2)]
-        print(f"Updated couch boundary to middle third: {couch_boundary}")
+            # Draw the middle third boundary on the frame
+            #cv.rectangle(frame, (couch_x1, middle_third_y1), (couch_x2, middle_third_y2), (0, 0, 255), 2)  # Red box
 
-    # Check if the dog is inside the couch boundary
-    if dog_position and couch_boundary:
-        x1, y1, x2, y2 = dog_position
-        center_x = (x1 + x2) // 2
-        center_y = (y1 + y2) // 2
+            # Update couch_boundary to middle third boundary
+            couch_boundary = [(couch_x1, middle_third_y1), (couch_x2, middle_third_y1), (couch_x2, middle_third_y2), (couch_x1, middle_third_y2)]
+            print(f"Updated couch boundary to middle third: {couch_boundary}")
 
-        # Plot the dog position as a point for debugging
-        cv.circle(frame, (center_x, center_y), 5, (255, 255, 0), -1)  # Cyan point
+        # Check if the dog is inside the couch boundary
+        if dog_position and couch_boundary:
+            x1, y1, x2, y2 = dog_position
+            center_x = (x1 + x2) // 2
+            center_y = (y1 + y2) // 2
 
-        # Convert couch boundary to a polygon
-        couch_poly = np.array(couch_boundary, np.int32).reshape((-1, 1, 2))
-        if cv.pointPolygonTest(couch_poly, (center_x, center_y), False) >= 0:
-            print("Dog is on the couch!")
-            log_beep()
-            #action_script.buzz_dog()
-        else:
-            print("Dog is not on the couch.")
+            # Plot the dog position as a point for debugging
+            cv.circle(frame, (center_x, center_y), 5, (255, 255, 0), -1)  # Cyan point
+
+            # Convert couch boundary to a polygon
+            couch_poly = np.array(couch_boundary, np.int32).reshape((-1, 1, 2))
+            if cv.pointPolygonTest(couch_poly, (center_x, center_y), False) >= 0:
+                print("Dog is on the couch!")
+                log_beep()
+                action_script.buzz_dog()
+            else:
+                print("Dog is not on the couch.")
+
+    frame_time = time.time() - frame_start_time
+    log_performance_metrics(frame_time, detection_time)
+    calculate_fps()
 
     cv.imshow("Dog & Couch Detection", frame)
     if cv.waitKey(1) & 0xFF == ord('q'):
+        save_beep_log()  # Save log before exiting
         break
 
 video_feed.release()
